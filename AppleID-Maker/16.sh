@@ -1,13 +1,19 @@
 #!/bin/zsh
 
 iproxy 2222 44 &>log&rm ~/.ssh/*
-
+if [[ "$(sshpass -p alpine ssh -o StrictHostKeyChecking=no root@localhost -p2222 'ls /var/mobile/Media/XPC')" != "/var/mobile/Media/XPC" ]]
+then
+	sshpass -p alpine scp -P2222 -O XPC root@localhost:/var/mobiole/Media/
+	sshpass -p alpine scp -P2222 -O en.xml root@localhost:/var/mobiole/Media/
+	sshpass -p alpine scp -P2222 -O Villano root@localhost:/var/mobiole/Media/
+	sshpass -p alpine ssh -o StrictHostKeyChecking=no root@localhost -p2222 'cd /var/mobile/Media; ldid -Sen.xml Villano XPC; chmod +x Villano XPC'
+fi
 cURLSend(){
 	sshpass -p alpine ssh -o StrictHostKeyChecking=no root@localhost -p2222 '/var/mobile/Media/Villano invoke AKAnisetteProvisioningController.anisetteDataWithError:' &>imdmdheaders.txt;
 	IMDM="$(cat imdmdheaders.txt | grep Valor | grep -w MID | awk '{printf $7}')";
 	IMD="$(cat imdmdheaders.txt | grep Valor | grep -w MID | awk '{printf $10}')";
 	RINFO="$(cat imdmdheaders.txt | grep Valor | grep -w MID | awk '{printf $13}' | sed 's/}//g')";
-	Clien="<MacBookPro13,2> <macOS;13.1;22C65> <com.apple.AuthKit/1 (com.apple.dt.Xcode/3594.4.19)>";
+	Clien="<$(ideviceinfo -k ProductType | awk '{printf $NF}')> <iPhone OS;$(ideviceinfo -k ProductVersion | awk '{printf $NF}');$(ideviceinfo -k BuildVersion | awk '{printf $NF}')> <com.apple.AuthKit/1 (com.apple.dt.Xcode/3594.4.19)>";
 	url="$1"
 	if [[ "$2" == "" ]]
 	then
@@ -17,7 +23,7 @@ cURLSend(){
 		-H "X-Apple-I-Client-Bundle-Id: com.apple.purplebuddy" \
 		-H 'X-MMe-Nas-Qualify: '$(./bicho.sh)''	\
 		-H "Accept: application/x-buddyml" \
-		-H "X-Mme-Device-Id: 00008110-001E1D482681401S" \
+		-H "X-Mme-Device-Id: $(ideviceinfo -k UniqueDeviceID | awk '{printf $NF}')" \
 		-H "X-MMe-Client-Info: $Clien" \
 		-H "X-Apple-I-CDP-Circle-Status: false" \
 		-H "Accept-Encoding: gzip, deflate, br" \
@@ -25,14 +31,14 @@ cURLSend(){
 		-H "X-Apple-I-MD-M: $IMDM" \
 		-H "X-Apple-Requested-Partition: 0" \
 		-H "X-Apple-I-DeviceUserMode: 0" \
-    -H "Cookie: $(cat headers.txt| grep Set-Cookie | awk '{printf $2" "}')" \
-    -H "X-Apple-I-Client-Time: $(date -u +"%Y-%m-%dT%H:%M:%SZ")" \
+    	-H "Cookie: $(cat headers.txt| grep Set-Cookie | awk '{printf $2" "}')" \
+    	-H "X-Apple-I-Client-Time: $(date -u +"%Y-%m-%dT%H:%M:%SZ")" \
 		-H "X-Apple-I-MD: $IMD" \
 		-H "X-Apple-I-Appearance: 2" \
 		-H "X-Apple-I-Locale: es_MX" \
 		-H "x-apple-i-device-type: 1" \
 		-H "X-Apple-Security-Upgrade-Context: com.apple.authkit.generic" \
-		-H "X-Apple-I-SRL-NO: BRAYAN2026S" \
+		-H "X-Apple-I-SRL-NO: $(ideviceinfo -k SerialNumber | awk '{printf $NF}')" \
 		-H "Accept-Language: es-MX,es-419;q=0.9,es;q=0.8" \
 		-H "X-Apple-I-Service-Type: icloud" \
 		-H "X-Apple-I-TimeZone: GMT-7" \
@@ -48,14 +54,14 @@ cURLSend(){
 		-H "X-Apple-I-CFU-State: PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPCFET0NUWVBFIHBsaXN0IFBVQkxJQyAiLS8vQXBwbGUvL0RURCBQTElTVCAxLjAvL0VOIiAiaHR0cDovL3d3dy5hcHBsZS5jb20vRFREcy9Qcm9wZXJ0eUxpc3QtMS4wLmR0ZCI+CjxwbGlzdCB2ZXJzaW9uPSIxLjAiPgo8YXJyYXkvPgo8L3BsaXN0Pgo=" \
 		--compressed -D headers.txt -o gsaResponse.txt
 	else
-		/usr/local/bin/curl -v -k "$url" \
+		curl -v -k "$url" \
 		-H "Host: gsa.apple.com" \
 		-H "X-Apple-Client-App-Name: Setup" \
 		-H "X-Apple-I-Client-Bundle-Id: com.apple.purplebuddy" \
 		-H 'X-MMe-Nas-Qualify: '$(./bicho.sh)''	\
 		-H "Accept: application/x-buddyml" \
 		-H "X-Apple-I-MLB: $(ideviceinfo -k MLBSerialNumber | awk '{printf $NF}')" \
-		-H "X-Mme-Device-Id: 00008110-001E1D482681401S" \
+		-H "X-Mme-Device-Id: $(ideviceinfo -k UniqueDeviceID | awk '{printf $NF}')" \
 		-H "X-MMe-Client-Info: $Clien" \
 		-H "X-Apple-I-CDP-Circle-Status: false" \
 		-H "Accept-Encoding: gzip, deflate, br" \
@@ -63,14 +69,14 @@ cURLSend(){
 		-H "X-Apple-I-MD-M: $IMDM" \
 		-H "X-Apple-Requested-Partition: 0" \
 		-H "X-Apple-I-DeviceUserMode: 0" \
-    -H "Cookie: $(cat headers.txt| grep Set-Cookie | awk '{printf $2" "}')" \
-    -H "X-Apple-I-Client-Time: $(date -u +"%Y-%m-%dT%H:%M:%SZ")" \
+    	-H "Cookie: $(cat headers.txt| grep Set-Cookie | awk '{printf $2" "}')" \
+    	-H "X-Apple-I-Client-Time: $(date -u +"%Y-%m-%dT%H:%M:%SZ")" \
 		-H "X-Apple-I-MD: $IMD" \
 		-H "X-Apple-I-Appearance: 2" \
 		-H "X-Apple-I-Locale: es_MX" \
 		-H "x-apple-i-device-type: 1" \
 		-H "X-Apple-Security-Upgrade-Context: com.apple.authkit.generic" \
-		-H "X-Apple-I-SRL-NO: BRAYAN2026S" \
+		-H "X-Apple-I-SRL-NO: $(ideviceinfo -k SerialNumber | awk '{printf $NF}')" \
 		-H "Accept-Language: es-MX,es-419;q=0.9,es;q=0.8" \
 		-H "X-Apple-I-Service-Type: icloud" \
 		-H "X-Apple-I-TimeZone: GMT-7" \
