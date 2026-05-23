@@ -1,0 +1,1 @@
+sshpass -p alpine ssh -o StrictHostKeyChecking=no root@localhost -p2222 "/var/mobile/Media/XPC com.apple.ak.anisette.xpc AKAppleIDSigningDaemonProtocol absintheSignatureForData:completion: NSData '$(cat body)' block" &>qualify.txt; cat qualify.txt | grep completion | awk '{printf $8}' | awk '{printf $NF}'
