@@ -9,4 +9,5 @@ Crea un nuevo AppleID con ayuda de un dispositivo con Jailbreak
 Ejemplo de Ejecucion:
 
 ./16.sh firstName lastName Password countryCode dialCode phoneNumber - (Optional)
+
 ./16.sh github perez S3278548@s MX 52 4776306155
